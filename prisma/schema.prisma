@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String?
+  role         Role     @default(customer)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses  Address[]
+  orders     Order[]
+  deliveries Delivery[] @relation("DeliveryPerson")
+  reviews    Review[]
+  carts      Cart[]
+}
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  addressLine String
+  city        String
+  pincode     String
+  state       String   @default("West Bengal")
+  landmark    String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  orders Order[]
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  parentId    Int?
+  children    Category[] @relation("Subcategories")
+  products    Product[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  price       Decimal
+  stock       Int       @default(0)
+  unit        String?
+  brand       String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+  inventory  InventoryLog[]
+  reviews    Review[]
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  user          User          @relation(fields: [userId], references: [id])
+  userId        Int
+  address       Address?      @relation(fields: [addressId], references: [id])
+  addressId     Int?
+  status        OrderStatus   @default(pending)
+  paymentMethod PaymentType   @default(COD)
+  paymentStatus PaymentStatus @default(unpaid)
+  totalAmount   Decimal
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items    OrderItem[]
+  delivery Delivery?
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Decimal
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+
+  items CartItem[]
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+}
+
+model Delivery {
+  id               Int            @id @default(autoincrement())
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId          Int            @unique
+  deliveryPerson   User           @relation("DeliveryPerson", fields: [deliveryPersonId], references: [id])
+  deliveryPersonId Int
+  status           DeliveryStatus @default(assigned)
+  assignedAt       DateTime       @default(now())
+  deliveredAt      DateTime?
+}
+
+model InventoryLog {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  change    Int
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  customer
+  admin
+  delivery
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentType {
+  COD
+  Razorpay
+}
+
+enum PaymentStatus {
+  unpaid
+  paid
+  failed
+}
+
+enum DeliveryStatus {
+  assigned
+  out_for_delivery
+  delivered
+}
