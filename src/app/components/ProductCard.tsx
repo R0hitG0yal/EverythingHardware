@@ -6,6 +6,7 @@ import { ShoppingCart, MessageCircle, Star } from "lucide-react";
 import Image from "next/image";
 import { formatPrice } from "./../lib/utils";
 import type { Product } from "../lib/types";
+import { useAppSelector } from "../redux/hooks";
 
 interface ProductCardProps {
   product: Product;
@@ -17,17 +18,20 @@ export default function ProductCard({ product }: ProductCardProps) {
     whatsappMessage
   )}`;
 
+  const categoryName = useAppSelector(
+    (s) => s.categories.items.find((c) => c.id === product.categoryId)?.name
+  );
   return (
     <Card className="group hover:shadow-lg transition-all duration-300">
       <CardContent className="p-4">
         <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100">
           <Image
-            src={product.image_url}
+            src={product.imageUrl ?? ""}
             alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          {!product.in_stock && (
+          {product.stock === 0 && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <Badge variant="destructive">Out of Stock</Badge>
             </div>
@@ -57,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <p className="text-xs text-gray-500">{product.brand}</p>
             </div>
             <Badge variant="secondary" className="text-xs text-gray-500">
-              {product.category}
+              {categoryName ?? "Uncategorized"}
             </Badge>
           </div>
         </div>
@@ -68,7 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Button
             size="sm"
             className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium"
-            disabled={!product.in_stock}
+            disabled={product.stock == 0}
           >
             <ShoppingCart className="h-4 w-4 mr-1" />
             Add to Cart
