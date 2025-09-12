@@ -4,7 +4,6 @@ import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { useEffect } from "react";
 import { fetchProducts } from "../redux/features/products/productsSlice";
-import Link from "next/link";
 
 export default function FeaturedProducts() {
   const dispatch = useAppDispatch();
@@ -32,9 +31,7 @@ export default function FeaturedProducts() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {featuredProducts.map((product) => (
-            <Link href={`/pages/product/${product.id}`} key={product.id} className="block">
-              <ProductCard product={product} />
-            </Link>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>

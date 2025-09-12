@@ -6,13 +6,16 @@ import { ShoppingCart, MessageCircle, Star } from "lucide-react";
 import Image from "next/image";
 import { formatPrice } from "./../lib/utils";
 import type { Product } from "../lib/types";
-import { useAppSelector } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import Link from "next/link";
+import { addItem } from "../redux/features/cart/cartSlice";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const dispatch = useAppDispatch();
   const whatsappMessage = `Hi! I'm interested in ${product.name} (₹${product.price}). Is it available?`;
   const whatsappUrl = `https://wa.me/917872926780?text=${encodeURIComponent(
     whatsappMessage
@@ -21,50 +24,57 @@ export default function ProductCard({ product }: ProductCardProps) {
   const categoryName = useAppSelector(
     (s) => s.categories.items.find((c) => c.id === product.categoryId)?.name
   );
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-300">
       <CardContent className="p-4">
-        <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100">
-          <Image
-            src={product.imageUrl ?? ""}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          {product.stock === 0 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="destructive">Out of Stock</Badge>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-sm text-gray-600 line-clamp-2 flex-1">
-              {product.name}
-            </h3>
-            <div className="flex items-center gap-1 ml-2">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs text-gray-600">4.5</span>
-            </div>
+        <Link
+          href={`/pages/product/${product.id}`}
+          key={product.id}
+          className="block"
+        >
+          <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100">
+            <Image
+              src={product.imageUrl ?? ""}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            {product.stock === 0 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <Badge variant="destructive">Out of Stock</Badge>
+              </div>
+            )}
           </div>
 
-          <p className="text-xs text-gray-600 line-clamp-2">
-            {product.description}
-          </p>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-lg font-bold text-orange-600">
-                {formatPrice(product.price)}
-              </p>
-              <p className="text-xs text-gray-500">{product.brand}</p>
+          <div className="space-y-2">
+            <div className="flex items-start justify-between">
+              <h3 className="font-semibold text-sm text-gray-600 line-clamp-2 flex-1">
+                {product.name}
+              </h3>
+              <div className="flex items-center gap-1 ml-2">
+                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <span className="text-xs text-gray-600">4.5</span>
+              </div>
             </div>
-            <Badge variant="secondary" className="text-xs text-gray-500">
-              {categoryName ?? "Uncategorized"}
-            </Badge>
+
+            <p className="text-xs text-gray-600 line-clamp-2">
+              {product.description}
+            </p>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-bold text-orange-600">
+                  {formatPrice(product.price)}
+                </p>
+                <p className="text-xs text-gray-500">{product.brand}</p>
+              </div>
+              <Badge variant="secondary" className="text-xs text-gray-500">
+                {categoryName ?? "Uncategorized"}
+              </Badge>
+            </div>
           </div>
-        </div>
+        </Link>
       </CardContent>
 
       <CardFooter className="p-4 pt-0 space-y-2">
@@ -73,6 +83,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             size="sm"
             className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium"
             disabled={product.stock == 0}
+            onClick={() =>
+              dispatch(addItem({ productId: product.id, quantity: 1 }))
+            }
           >
             <ShoppingCart className="h-4 w-4 mr-1" />
             Add to Cart

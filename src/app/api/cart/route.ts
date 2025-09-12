@@ -30,8 +30,26 @@ export async function POST(req: NextRequest) {
   let cart = await prisma.cart.findFirst({ where: { userId: user.id } });
   if (!cart) cart = await prisma.cart.create({ data: { userId: user.id } });
 
-  const item = await prisma.cartItem.create({
-    data: { cartId: cart.id, productId, quantity },
+  // Check if item already exists in cart
+  const existingItem = await prisma.cartItem.findFirst({
+    where: { cartId: cart.id, productId },
+    include: { product: true },
   });
-  return NextResponse.json(item);
+
+  if (existingItem) {
+    // Update existing item quantity
+    const updatedItem = await prisma.cartItem.update({
+      where: { id: existingItem.id },
+      data: { quantity: existingItem.quantity + quantity },
+      include: { product: true },
+    });
+    return NextResponse.json(updatedItem);
+  } else {
+    // Create new item
+    const item = await prisma.cartItem.create({
+      data: { cartId: cart.id, productId, quantity },
+      include: { product: true },
+    });
+    return NextResponse.json(item);
+  }
 }

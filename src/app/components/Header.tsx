@@ -5,15 +5,26 @@ import { Input } from "./ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useAppSelector } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { Product } from "../lib/types";
+import { fetchCart } from "../redux/features/cart/cartSlice";
 
 export default function Header() {
+  const dispatch = useAppDispatch();
   const [search, setSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const searchRef = useRef<HTMLDivElement>(null);
   const { items: products } = useAppSelector((state) => state.products);
+  const { items: cartItems } = useAppSelector((state) => state.cart);
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
+  const totalItemsInCart = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+  console.log(totalItemsInCart, " Total");
 
   // Filter products based on search query
   const filteredProducts = useMemo(() => {
@@ -195,7 +206,7 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
+                {totalItemsInCart}
               </span>
             </Button>
             <Button variant="ghost" size="icon" className="md:hidden">
