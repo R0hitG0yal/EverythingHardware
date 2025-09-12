@@ -50,6 +50,8 @@ model Category {
   id          Int        @id @default(autoincrement())
   name        String     @unique
   description String?
+  image       String
+  slug        String     @unique
   parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
   parentId    Int?
   children    Category[] @relation("Subcategories")
