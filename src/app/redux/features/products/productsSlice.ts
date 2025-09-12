@@ -15,16 +15,25 @@ export interface Product {
   isActive: boolean;
   createdAt?: Date | null;
   updatedAt: Date;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string | null;
+    image?: string;
+  } | null;
 }
 
 export interface ProductState {
   items: Product[];
+  selectedProduct: Product | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ProductState = {
   items: [],
+  selectedProduct: null,
   loading: false,
   error: null,
 };
@@ -175,6 +184,7 @@ const productsSlice = createSlice({
       getProductById.fulfilled,
       (state, action: PayloadAction<Product>) => {
         state.loading = false;
+        state.selectedProduct = action.payload;
         const idx = state.items.findIndex((c) => c.id === action.payload.id);
         if (idx >= 0) state.items[idx] = action.payload;
         else state.items.push(action.payload);

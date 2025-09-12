@@ -40,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="space-y-2">
           <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 flex-1">
+            <h3 className="font-semibold text-sm text-gray-600 line-clamp-2 flex-1">
               {product.name}
             </h3>
             <div className="flex items-center gap-1 ml-2">

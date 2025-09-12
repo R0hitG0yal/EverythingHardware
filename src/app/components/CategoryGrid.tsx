@@ -33,7 +33,7 @@ export default function CategoryGrid() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((category) => (
-            <Link key={category.id} href={`/category/${category.slug}`}>
+            <Link key={category.id} href={`/pages/category/${category.id}`} className="block">
               <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
                 <CardContent className="p-4 text-center">
                   <div className="relative w-full h-28 mb-3 rounded-lg overflow-hidden">
@@ -44,7 +44,7 @@ export default function CategoryGrid() {
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <h3 className="font-semibold text-sm text-gray-900 mb-1">
+                  <h3 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">
                     {category.name}
                   </h3>
                   <p className="text-xs text-gray-600">
